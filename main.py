@@ -47,7 +47,6 @@ while cap.isOpened(): # пока камера "работает"
     
     cv2.putText(image, "Up fingers: " + str(upCount), (100, 150), cv2.FONT_ITALIC, (w + h) // 560, (0, 255, 0), (w + h) // 560)
     cv2.putText(image, "Down fingers: " + str(downCount), (100, 250), cv2.FONT_ITALIC, (w + h) // 560, (0, 255, 0), (w + h) // 560)
-    print (h + w)
     cv2.imshow('web-cam', image) # показываем изображение
 
     if cv2.waitKey(1) & 0xFF == 27: # Ожидаем нажатие ESC
