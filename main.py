@@ -1,5 +1,6 @@
 import cv2
 import mediapipe as mp
+import time
 # import win32api
 
 cap = cv2.VideoCapture(0) # Подключение к web-камере
@@ -7,7 +8,7 @@ mp_Hands = mp.solutions.hands # говорим, что хотим, а хотим
 hands = mp_Hands.Hands(max_num_hands = 10) # характеристика для распознования
 mpDraw = mp.solutions.drawing_utils # инициализация утилиты для рисования
 fingersCoord = [(8, 6), (12, 10), (16, 14), (20, 18)] # ключевые точки всех пальцев, кроме большого
-thumbCoord = (4, 2) # ключевая точка для большого пальца
+thumbCoord = (4, 3) # ключевая точка для большого пальца
 
 while cap.isOpened(): # пока камера "работает"
     success, image = cap.read() # получение кадра с камеры
@@ -15,12 +16,13 @@ while cap.isOpened(): # пока камера "работает"
         # win32api.MessageBox(0, 'Ошибка!', 'Не удалось получить кадр с web-камеры'
         print('Не удалось получить кадр с web-камеры')
         continue
+    prevTime = time.time()
     image = cv2.flip(image, 1) # зеркально отражаем изображение
     RGB_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # меняем кодировку изображения
     result = hands.process(RGB_image) # ищем руки на изображении
     multiLandMarks = result.multi_hand_landmarks # извлекаем коллекцию (список) найденных рук
     upCount = 0 # сколько поднятых пальцев
-    downCount = 0 # сколько опущенных пальцев
+    # downCount = 0 # сколько опущенных пальцев
     h, w, c = image.shape
     if multiLandMarks: # если коллекция не пустая
         for idx, handLms in enumerate(multiLandMarks):
@@ -37,16 +39,28 @@ while cap.isOpened(): # пока камера "работает"
             for coord in fingersCoord:
                 if fingersList[coord[0]][1] < fingersList[coord[1]][1]:
                     upCount += 1
-                else:
-                    downCount += 1
-
-            if fingersList[thumbCoord[0]][0] < fingersList[thumbCoord[1]][0] or fingersList[thumbCoord[0]][0] > fingersList[thumbCoord[1]][0]:
+            
+            
+            if fingersList[thumbCoord[0]][0] < fingersList[thumbCoord[1]][0]:
                 upCount += 1
+            side = 'left'
+            if fingersList[5][0] > fingersList[17][0]:
+                side = 'right'
+            if side == 'left':
+                if fingersList[thumbCoord[0]][0] > fingersList[thumbCoord[1]][0]:
+                    upCount += 1
             else:
-                downCount += 1
+                if fingersList[thumbCoord[0]][0] > fingersList[thumbCoord[1]][0]:
+                    upCount += 1
     
     cv2.putText(image, "Up fingers: " + str(upCount), (100, 150), cv2.FONT_ITALIC, (w + h) // 560, (0, 255, 0), (w + h) // 560)
-    cv2.putText(image, "Down fingers: " + str(downCount), (100, 250), cv2.FONT_ITALIC, (w + h) // 560, (0, 255, 0), (w + h) // 560)
+    #cv2.putText(image, "Down fingers: " + str(downCount), (100, 250), cv2.FONT_ITALIC, (w + h) // 560, (0, 255, 0), (w + h) // 560)
+    
+    curTime = time.time()
+    fps = 1 / (curTime - prevTime)
+
+    cv2.putText(image, f"FPS: {round(fps, 1)}", (10, 25), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 0), 2)
+
     cv2.imshow('web-cam', image) # показываем изображение
 
     if cv2.waitKey(1) & 0xFF == 27: # Ожидаем нажатие ESC
