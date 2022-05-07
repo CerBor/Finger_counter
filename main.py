@@ -23,7 +23,7 @@ while cap.isOpened():  # пока камера "работает"
     if multiLandMarks:
         for idx, handLms in enumerate(multiLandMarks):
             lbl = result.multi_handedness[idx].classification[0].label
-            rus = "Левая" if label == "Left" else "Правая" if label == "Right" else "Неизвестно"
+            rus = "Левая" if lbl == "Left" else "Правая" if lbl == "Right" else "Неизвестно"
             print(rus)
             mpDraw.draw_landmarks(image, handLms, mp_Hands.HAND_CONNECTIONS)
             fingersList = []
